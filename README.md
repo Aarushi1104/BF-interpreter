@@ -8,7 +8,6 @@ Welcome to the BF Interpreter project! This repository contains a simple and eff
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Examples](#examples)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -43,36 +42,6 @@ To run the BF interpreter, use the following command:
 
 ```sh
 python bf_interpreter.py path/to/your/bf/code.bf
-```
-
-## Examples
-
-Here are some examples of BF code you can run:
-
-### Hello World
-
-```bf
-++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++.>++++.-----------.>+.>.
-```
-
-To execute the "Hello World" example:
-
-```sh
-python bf_interpreter.py examples/hello_world.bf
-```
-
-### Fibonacci Sequence
-
-```bf
-++++++++++>+>>>>++++++++++++++++++++++++++++++++++++++++++++>++++++++++++++++++++++++++++++++<<<<<<[>[>>>>>>+>
-+<<<<<<<-]>>>>>>>[<<<<<<<+>>>>>>>-]<[>++++++++++[-<-[>>+>+<<<-]>>>[<<<+>>>-]+<[>[-]<[-]]>[>+<-]>>[-]]<<+++++++
-+++[-<+++++++++++++>]<.[-]<]<]++++[>+++[>++>+++>+++>+<<<<-]>-.>----.+++++.-------.<.[-]<]
-```
-
-To execute the Fibonacci sequence example:
-
-```sh
-python bf_interpreter.py examples/fibonacci.bf
 ```
 
 rules of BF:
