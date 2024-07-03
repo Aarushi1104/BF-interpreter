@@ -1,7 +1,7 @@
 (ns bf.interpreter
   (:require [clojure.string :as str]))
 
-;; pointer means "memory/data pointer"
+; "pointer" here means "memory/data pointer"
 (def init-pointer 0)
 (def tape-size 30)
 (def init-tape (vec (repeat tape-size 0)))
@@ -11,34 +11,37 @@
       slurp
       str/trim-newline))
 
-(defn inc-at [index v]
-  (let [elem (get v index)]
-    (assoc v index (inc elem))))
+(defn machine-constraints [tape ptr]
+  (and (< -1 ptr tape-size)
+       (every? (comp not neg?) tape)))
 
-(defn dec-at [index v]
-  (let [elem (get v index)]
-    (assoc v index (dec elem))))
+(defn apply-at [f]
+  (fn [index v]
+    (let [elem (get v index)]
+      (assoc v index (f elem)))))
+
+(def inc-at (apply-at inc))
+(def dec-at (apply-at dec))
 
 (defn interpret [code tape ptr]
-  (let [cell (first tape)
-        tokens (seq code)
+  (assert (machine-constraints tape ptr))
+  (let [tokens (seq code)
         token (first tokens)
-        rest-tokens (rest tokens)]
+        next-tokens (rest tokens)]
     (if (empty? tokens) tape
       (case token
-        \+    (interpret rest-tokens (inc-at ptr tape) ptr)
-        \-    (interpret rest-tokens (dec-at ptr tape) ptr)
-        \>    (interpret rest-tokens tape (inc ptr))
-        \<    (interpret rest-tokens tape (dec ptr))
-        \.    nil
-              ; otherwise
-              (interpret rest-tokens tape ptr)))))
+        \+ (recur next-tokens (inc-at ptr tape) ptr)
+        \- (recur next-tokens (dec-at ptr tape) ptr)
+        \> (recur next-tokens tape (inc ptr))
+        \< (recur next-tokens tape (dec ptr))
+        \. (do (print (get tape ptr))
+               (recur next-tokens tape ptr))
+        ; otherwise
+        (recur next-tokens tape ptr)))))
 
 (defn bf [path]
   (let [bf-code (read-file path)]
     (interpret bf-code init-tape init-pointer)))
 
 ; testing
-; (prn (inc-at 0 [1 2 3]))
-; (prn (dec-at 2 [0 0 1]))
-(-> "./test.bf" bf prn)
+(-> "../tests/test3.bf" bf prn)
