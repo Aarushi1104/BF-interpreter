@@ -35,8 +35,7 @@
       (= \] x) (if (and (not (empty? stack)) (= (first (peek stack)) \[))
                  (recur (pop stack) (inc idx) xs (assoc match (second (peek stack)) idx))
                  false)
-      :else (recur stack (inc idx) xs match)))
-  )
+      :else (recur stack (inc idx) xs match))))
 
 (defn interpret [code tape ptr code-ptr]
   (assert (machine-constraints tape ptr))
@@ -49,27 +48,22 @@
           \> (recur code tape (inc ptr) (inc code-ptr))
           \< (recur code tape (dec ptr) (inc code-ptr))
           \[ (if (= (get tape ptr) 0)
-                 (recur code tape ptr (matching code-ptr))
-                 (recur code tape ptr (inc code-ptr))
-             )
+               (recur code tape ptr (matching code-ptr))
+               (recur code tape ptr (inc code-ptr)))
           \] (if (= (get tape ptr) 0)
                (recur code tape ptr (inc code-ptr))
-               (recur code tape ptr (matching code-ptr))
-             )
+               (recur code tape ptr (matching code-ptr)))
           \. (do (print (get tape ptr))
-                 (recur code  tape ptr (inc code-ptr)))
-        ; otherwise
-          (recur code tape ptr (inc code-ptr)))
-        )
-    )
-  )
+                 (recur code tape ptr (inc code-ptr)))
+          ; otherwise
+          (recur code tape ptr (inc code-ptr))))))
 
 (defn bf [path]
   (let [bf-code (read-file path)]
     (interpret bf-code init-tape init-pointer init-code-ptr)))
 
 ; testing
-(-> "../tests/print50.bf" bf prn)
+(-> "../tests/test2.bf" bf prn)
 
 ; bracket matching tests
 ;; (prn (= (valid-pairs "[][[[[[[]]]]]]") {0 1, 7 8, 6 9, 5 10, 4 11, 3 12, 2 13}))
