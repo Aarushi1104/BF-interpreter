@@ -60,3 +60,12 @@
 
 ; testing
 ;(-> "../tests/test3.bf" bf prn)
+
+; bracket matching tests
+;; (prn (= (valid-pairs "[][[[[[[]]]]]]") {0 1, 7 8, 6 9, 5 10, 4 11, 3 12, 2 13}))
+;; (prn (= (valid-pairs "[][][][]") {0 1, 2 3, 4 5, 6 7}))
+;; (prn (= (valid-pairs "[a]") {0 2}))
+;; (prn (= (valid-pairs "[a]asd[[ds[gf]hg]]") {0 2, 10 13, 7 16, 6 17}))
+;; (prn (= (valid-pairs "sdfbg") {}))
+;; (prn (= (valid-pairs "") {}))
+;; (prn (= (valid-pairs "[[[[[[[[]") false))
