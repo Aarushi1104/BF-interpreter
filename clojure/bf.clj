@@ -23,17 +23,32 @@
 (def inc-at (apply-at inc))
 (def dec-at (apply-at dec))
 
+(defn valid-pairs [input]
+    (loop [stack []
+           idx 0
+           [x & xs :as s] input
+           match {}]
+      (cond
+        (empty? s) (if (empty? stack) match false)
+        (= \[ x) (recur (conj stack [x idx]) (inc idx) xs match)
+        (= \] x) (if (and (not (empty? stack)) (= (first (peek stack)) \[))
+                      (recur (pop stack) (inc idx) xs (assoc match (second (peek stack)) idx))
+                      false)
+        :else (recur stack (inc idx) xs match))))
+
 (defn interpret [code tape ptr]
   (assert (machine-constraints tape ptr))
   (let [tokens (seq code)
         token (first tokens)
-        next-tokens (rest tokens)]
+        next-tokens (rest tokens)
+        matching (valid-pairs code)]
     (if (empty? tokens) tape
       (case token
         \+ (recur next-tokens (inc-at ptr tape) ptr)
         \- (recur next-tokens (dec-at ptr tape) ptr)
         \> (recur next-tokens tape (inc ptr))
         \< (recur next-tokens tape (dec ptr))
+        \[ (prn 0)
         \. (do (print (get tape ptr))
                (recur next-tokens tape ptr))
         ; otherwise
@@ -44,4 +59,4 @@
     (interpret bf-code init-tape init-pointer)))
 
 ; testing
-(-> "../tests/test3.bf" bf prn)
+;(-> "../tests/test3.bf" bf prn)
