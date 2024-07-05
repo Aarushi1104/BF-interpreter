@@ -53,7 +53,7 @@
           \] (if (= (get tape ptr) 0)
                (recur code tape ptr (inc code-ptr))
                (recur code tape ptr (matching code-ptr)))
-          \. (do (print (get tape ptr))
+          \. (do (print (char (get tape ptr)))
                  (recur code tape ptr (inc code-ptr)))
           ; otherwise
           (recur code tape ptr (inc code-ptr))))))
