@@ -3,7 +3,7 @@
 
 ; "pointer" here means "memory/data pointer"
 (def init-pointer 0)
-(def tape-size 30)
+(def tape-size 30000)
 (def init-tape (vec (repeat tape-size 0)))
 (def init-code-ptr 0)
 
@@ -37,6 +37,9 @@
                  false)
       :else (recur stack (inc idx) xs match))))
 
+(defn read-byte []
+  (int (.read System/in)))
+
 (defn interpret [code tape ptr code-ptr]
   (assert (machine-constraints tape ptr))
   (let [token (get code code-ptr)
@@ -48,13 +51,14 @@
           \> (recur code tape (inc ptr) (inc code-ptr))
           \< (recur code tape (dec ptr) (inc code-ptr))
           \[ (if (= (get tape ptr) 0)
-               (recur code tape ptr (matching code-ptr))
+               (recur code tape ptr (inc (matching code-ptr)))
                (recur code tape ptr (inc code-ptr)))
           \] (if (= (get tape ptr) 0)
                (recur code tape ptr (inc code-ptr))
-               (recur code tape ptr (matching code-ptr)))
+               (recur code tape ptr (inc (matching code-ptr))))
           \. (do (print (char (get tape ptr)))
                  (recur code tape ptr (inc code-ptr)))
+          \, (recur code (assoc tape ptr (read-byte)) ptr (inc code-ptr))
           ; otherwise
           (recur code tape ptr (inc code-ptr))))))
 
@@ -63,7 +67,7 @@
     (interpret bf-code init-tape init-pointer init-code-ptr)))
 
 ; testing
-(-> "../tests/test2.bf" bf prn)
+(-> "../tests/one_to_10.bf" bf prn)
 
 ; bracket matching tests
 ;; (prn (= (valid-pairs "[][[[[[[]]]]]]") {0 1, 7 8, 6 9, 5 10, 4 11, 3 12, 2 13}))
