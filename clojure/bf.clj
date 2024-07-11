@@ -1,9 +1,10 @@
 (ns bf.interpreter
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str])
+  (:require clojure.set))
 
 ; "pointer" here means "memory/data pointer"
 (def init-pointer 0)
-(def tape-size 30000)
+(def tape-size 300)
 (def init-tape (vec (repeat tape-size 0)))
 (def init-code-ptr 0)
 
@@ -20,6 +21,10 @@
   (fn [index v]
     (let [elem (get v index)]
       (assoc v index (f elem)))))
+
+(defn bimap
+  [a-map]
+  (merge a-map (clojure.set/map-invert a-map)))
 
 (def inc-at (apply-at inc))
 (def dec-at (apply-at dec))
@@ -43,7 +48,7 @@
 (defn interpret [code tape ptr code-ptr]
   (assert (machine-constraints tape ptr))
   (let [token (get code code-ptr)
-        matching (valid-pairs code)]
+        matching (bimap (valid-pairs code))]
     (if (= token nil) tape
         (case token
           \+ (recur code (inc-at ptr tape) ptr (inc code-ptr))
@@ -67,7 +72,7 @@
     (interpret bf-code init-tape init-pointer init-code-ptr)))
 
 ; testing
-(-> "../tests/one_to_10.bf" bf prn)
+(-> "../tests/sum_to_n.bf" bf prn)
 
 ; bracket matching tests
 ;; (prn (= (valid-pairs "[][[[[[[]]]]]]") {0 1, 7 8, 6 9, 5 10, 4 11, 3 12, 2 13}))
@@ -77,3 +82,6 @@
 ;; (prn (= (valid-pairs "sdfbg") {}))
 ;; (prn (= (valid-pairs "") {}))
 ;; (prn (= (valid-pairs "[[[[[[[[]") false))
+
+(prn (bimap (valid-pairs "[][[[[[[]]]]]]")))
+
