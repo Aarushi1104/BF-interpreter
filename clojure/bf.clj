@@ -83,5 +83,5 @@
 ;; (prn (= (valid-pairs "") {}))
 ;; (prn (= (valid-pairs "[[[[[[[[]") false))
 
-(prn (bimap (valid-pairs "[][[[[[[]]]]]]")))
+;; (prn (bimap (valid-pairs "[][[[[[[]]]]]]")))
 
