@@ -13,6 +13,9 @@
       slurp
       str/trim-newline))
 
+(defn read-byte []
+  (int (.read System/in)))
+
 (defn machine-constraints [tape ptr]
   (and (< -1 ptr tape-size)
        (every? (comp not neg?) tape)))
@@ -22,12 +25,11 @@
     (let [elem (get v index)]
       (assoc v index (f elem)))))
 
-(defn bimap
-  [a-map]
-  (merge a-map (clojure.set/map-invert a-map)))
-
 (def inc-at (apply-at inc))
 (def dec-at (apply-at dec))
+
+(defn bimap [a-map]
+  (merge a-map (clojure.set/map-invert a-map)))
 
 (defn valid-pairs [input]
   (loop [stack []
@@ -38,12 +40,9 @@
       (empty? s) (if (empty? stack) match false)
       (= \[ x) (recur (conj stack [x idx]) (inc idx) xs match)
       (= \] x) (if (and (not (empty? stack)) (= (first (peek stack)) \[))
-                 (recur (pop stack) (inc idx) xs (assoc match (second (peek stack)) idx))
-                 false)
+                   (recur (pop stack) (inc idx) xs (assoc match (second (peek stack)) idx))
+                   false)
       :else (recur stack (inc idx) xs match))))
-
-(defn read-byte []
-  (int (.read System/in)))
 
 (defn interpret [code tape ptr code-ptr]
   (assert (machine-constraints tape ptr))
@@ -71,17 +70,51 @@
   (let [bf-code (read-file path)]
     (interpret bf-code init-tape init-pointer init-code-ptr)))
 
+
 ; testing
-(-> "../tests/sum_to_n.bf" bf prn)
+; (-> "../tests/test3.bf" bf prn)
 
 ; bracket matching tests
-;; (prn (= (valid-pairs "[][[[[[[]]]]]]") {0 1, 7 8, 6 9, 5 10, 4 11, 3 12, 2 13}))
-;; (prn (= (valid-pairs "[][][][]") {0 1, 2 3, 4 5, 6 7}))
-;; (prn (= (valid-pairs "[a]") {0 2}))
-;; (prn (= (valid-pairs "[a]asd[[ds[gf]hg]]") {0 2, 10 13, 7 16, 6 17}))
-;; (prn (= (valid-pairs "sdfbg") {}))
-;; (prn (= (valid-pairs "") {}))
-;; (prn (= (valid-pairs "[[[[[[[[]") false))
+; (prn (= (valid-pairs "[][[[[[[]]]]]]") {0 1, 7 8, 6 9, 5 10, 4 11, 3 12, 2 13}))
+; (prn (= (valid-pairs "[][][][]") {0 1, 2 3, 4 5, 6 7}))
+; (prn (= (valid-pairs "[a]") {0 2}))
+; (prn (= (valid-pairs "[a]asd[[ds[gf]hg]]") {0 2, 10 13, 7 16, 6 17}))
+; (prn (= (valid-pairs "sdfbg") {}))
+; (prn (= (valid-pairs "") {}))
+; (prn (= (valid-pairs "[[[[[[[[]") false))
+; (prn (bimap (valid-pairs "[][[[[[[]]]]]]")))
 
-;; (prn (bimap (valid-pairs "[][[[[[[]]]]]]")))
+;;;;;;;;;;;;;;;;;;;;;; FOR TESTING ;;;;;;;;;;;;;;;;;;;;;;
+(def testing false)
+(def test-dir "../tests/")
+(def tests {"test1.bf" [1]
+            "test2.bf" [0 7 3]
+            "test3.bf" [8 0 1 0 5]
+            "helloworld.bf" [0 87 100 33 10]
+           })
 
+(defn trim-tape [tape]
+  "Takes the tape (as a vector) and removes all
+   trailing zeros to the right of the tape."
+  (loop [index (.length tape)]
+    (if (zero? index)
+      []
+      (if (zero? (get tape (dec index)))
+        (recur (dec index))
+        (vec (take index tape)))))) ; convert list to vector
+
+(defn run-test [test expected-tape]
+  "Runs an individual test .bf file, prints the
+   results to the terminal and then evaluates to nil.
+   The final state of the tape is compared to the expected
+   correct tape to determine whether the test passed."
+  (println (str "Running test \"" test "\""))
+  (let [result (trim-tape (bf (str test-dir test)))
+        passed (= expected-tape result)]
+    ; (println "Tape:\n" result)
+    (println (if passed "passed" "failed") "\n")))
+
+(defn run-all-tests []
+  (doseq [[test tape] tests] (run-test test tape)))
+
+(when testing (run-all-tests))
