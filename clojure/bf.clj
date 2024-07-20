@@ -31,18 +31,81 @@
 (defn bimap [a-map]
   (merge a-map (clojure.set/map-invert a-map)))
 
-(defn valid-pairs [input]
-  (loop [stack []
-         idx 0
-         [x & xs :as s] input
-         match {}]
+;; (defn valid-pairs [input]
+;;   (loop [stack []
+;;          idx 0
+;;          [x & xs :as s] input
+;;          match {}]
+;;     (cond
+;;        (empty? s) (if (empty? stack) match false)
+
+;;        (= \[ x) (recur (conj stack [x idx]) (inc idx) xs match)
+
+;;        (= \] x)
+;;          (if (and (not (empty? stack)) (= (first (peek stack)) \[))
+;;            (let [top (peek stack)
+;;                  updated-match (assoc match (second top) idx)
+;;                  remaining-stack (pop stack)
+;;                  nextIndex (inc idx)]
+;;              (recur remaining-stack nextIndex xs updated-match))
+;;            false)
+      
+;;        :else
+;;          (recur stack (inc idx) xs match))))
+
+(defn init-state [input]
+  {:stack []
+   :idx 0
+   :input input
+   :match {}})
+
+(defn handle-open-bracket [state]
+  (let [{:keys [stack idx input match]} state
+        [x & xs] input]
+    {:stack (conj stack [x idx])
+     :idx (inc idx)
+     :input xs
+     :match match}))
+
+(defn handle-close-bracket [state]
+  (let [{:keys [stack idx input match]} state
+        [x & xs] input
+        top (peek stack)]
+    (if (and (not (empty? stack)) (= (first top) \[))
+      {:stack (pop stack)
+       :idx (inc idx)
+       :input xs
+       :match (assoc match (second top) idx)}
+      false)))
+
+(defn process-input [state]
+  (let [{:keys [stack idx input match]} state
+        [x & xs] input]
     (cond
-      (empty? s) (if (empty? stack) match false)
-      (= \[ x) (recur (conj stack [x idx]) (inc idx) xs match)
-      (= \] x) (if (and (not (empty? stack)) (= (first (peek stack)) \[))
-                   (recur (pop stack) (inc idx) xs (assoc match (second (peek stack)) idx))
-                   false)
-      :else (recur stack (inc idx) xs match))))
+      (empty? input)
+      (if (empty? stack) match false)
+
+      (= \[ x) (handle-open-bracket state)
+
+      (= \] x) (let [new-state (handle-close-bracket state)]
+                 (if new-state
+                   new-state
+                   false))
+
+      :else
+      {:stack stack
+       :idx (inc idx)
+       :input xs
+       :match match})))
+
+(defn valid-pairs [input]
+  (loop [state (init-state input)]
+    (if (or (empty? (:input state)) (false? state))
+      (if (or (false? state) (not (empty? (:stack state))))
+        false
+        (:match state))
+      (recur (process-input state)))))
+
 
 (defn interpret [code tape ptr code-ptr]
   (assert (machine-constraints tape ptr))
@@ -75,23 +138,25 @@
 ; (-> "../tests/test3.bf" bf prn)
 
 ; bracket matching tests
-; (prn (= (valid-pairs "[][[[[[[]]]]]]") {0 1, 7 8, 6 9, 5 10, 4 11, 3 12, 2 13}))
-; (prn (= (valid-pairs "[][][][]") {0 1, 2 3, 4 5, 6 7}))
-; (prn (= (valid-pairs "[a]") {0 2}))
-; (prn (= (valid-pairs "[a]asd[[ds[gf]hg]]") {0 2, 10 13, 7 16, 6 17}))
-; (prn (= (valid-pairs "sdfbg") {}))
-; (prn (= (valid-pairs "") {}))
-; (prn (= (valid-pairs "[[[[[[[[]") false))
-; (prn (bimap (valid-pairs "[][[[[[[]]]]]]")))
+(prn (= (valid-pairs "[][[[[[[]]]]]]") {0 1, 7 8, 6 9, 5 10, 4 11, 3 12, 2 13}))
+(prn (= (valid-pairs "[][][][]") {0 1, 2 3, 4 5, 6 7}))
+(prn (= (valid-pairs "[a]") {0 2}))
+(prn (= (valid-pairs "[a]asd[[ds[gf]hg]]") {0 2, 10 13, 7 16, 6 17}))
+(prn (= (valid-pairs "sdfbg") {}))
+(prn (= (valid-pairs "") {}))
+(prn (= (valid-pairs "[[[[[[[[]") false))
+;; (prn (bimap (valid-pairs "[][[[[[[]]]]]]")))
 
 ;;;;;;;;;;;;;;;;;;;;;; FOR TESTING ;;;;;;;;;;;;;;;;;;;;;;
-(def testing false)
+(def testing true)
 (def test-dir "../tests/")
 (def tests {"test1.bf" [1]
             "test2.bf" [0 7 3]
             "test3.bf" [8 0 1 0 5]
             "helloworld.bf" [0 87 100 33 10]
-           })
+            "one_to_10.bf" [48, 10]
+            "print50.bf" [5]
+            })
 
 (defn trim-tape [tape]
   "Takes the tape (as a vector) and removes all
