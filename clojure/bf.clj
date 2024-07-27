@@ -31,28 +31,6 @@
 (defn bimap [a-map]
   (merge a-map (clojure.set/map-invert a-map)))
 
-;; (defn valid-pairs [input]
-;;   (loop [stack []
-;;          idx 0
-;;          [x & xs :as s] input
-;;          match {}]
-;;     (cond
-;;        (empty? s) (if (empty? stack) match false)
-
-;;        (= \[ x) (recur (conj stack [x idx]) (inc idx) xs match)
-
-;;        (= \] x)
-;;          (if (and (not (empty? stack)) (= (first (peek stack)) \[))
-;;            (let [top (peek stack)
-;;                  updated-match (assoc match (second top) idx)
-;;                  remaining-stack (pop stack)
-;;                  nextIndex (inc idx)]
-;;              (recur remaining-stack nextIndex xs updated-match))
-;;            false)
-      
-;;        :else
-;;          (recur stack (inc idx) xs match))))
-
 (defn init-state [input]
   {:stack []
    :idx 0
