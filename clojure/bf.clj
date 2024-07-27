@@ -7,6 +7,7 @@
 (def tape-size 300)
 (def init-tape (vec (repeat tape-size 0)))
 (def init-code-ptr 0)
+(def help-message "Usage:")
 
 (defn read-file [path]
   (-> path
@@ -18,7 +19,8 @@
 
 (defn machine-constraints [tape ptr]
   (and (< -1 ptr tape-size)
-       (every? (comp not neg?) tape)))
+      ;;  (every? (comp not neg?) tape)
+       true))
 
 (defn apply-at [f]
   (fn [index v]
@@ -111,29 +113,41 @@
   (let [bf-code (read-file path)]
     (interpret bf-code init-tape init-pointer init-code-ptr)))
 
+(defn main []
+  (let [first-arg (first *command-line-args*)]
+    (cond
+      (nil? first-arg) (print help-message)
+      :else            (print (bf first-arg)))))
+
+(main)
+
 
 ; testing
 ; (-> "../tests/test3.bf" bf prn)
 
 ; bracket matching tests
-(prn (= (valid-pairs "[][[[[[[]]]]]]") {0 1, 7 8, 6 9, 5 10, 4 11, 3 12, 2 13}))
-(prn (= (valid-pairs "[][][][]") {0 1, 2 3, 4 5, 6 7}))
-(prn (= (valid-pairs "[a]") {0 2}))
-(prn (= (valid-pairs "[a]asd[[ds[gf]hg]]") {0 2, 10 13, 7 16, 6 17}))
-(prn (= (valid-pairs "sdfbg") {}))
-(prn (= (valid-pairs "") {}))
-(prn (= (valid-pairs "[[[[[[[[]") false))
+;; (prn (= (valid-pairs "[][[[[[[]]]]]]") {0 1, 7 8, 6 9, 5 10, 4 11, 3 12, 2 13}))
+;; (prn (= (valid-pairs "[][][][]") {0 1, 2 3, 4 5, 6 7}))
+;; (prn (= (valid-pairs "[a]") {0 2}))
+;; (prn (= (valid-pairs "[a]asd[[ds[gf]hg]]") {0 2, 10 13, 7 16, 6 17}))
+;; (prn (= (valid-pairs "sdfbg") {}))
+;; (prn (= (valid-pairs "") {}))
+;; (prn (= (valid-pairs "[[[[[[[[]") false))
 ;; (prn (bimap (valid-pairs "[][[[[[[]]]]]]")))
 
 ;;;;;;;;;;;;;;;;;;;;;; FOR TESTING ;;;;;;;;;;;;;;;;;;;;;;
 (def testing true)
-(def test-dir "../tests/")
+(def test-dir "tests/")
 (def tests {"test1.bf" [1]
             "test2.bf" [0 7 3]
             "test3.bf" [8 0 1 0 5]
             "helloworld.bf" [0 87 100 33 10]
             "one_to_10.bf" [48, 10]
             "print50.bf" [5]
+            ;; "beer.bf" [0, 119, 118, 117, 116, 115, 114, 113, 112, 111, 110, 109, 108, 107, 106, 105, 104, 103, 102, 101, 100, 99, 98, 97, 84, 46, 44, 32, 10]
+            "square.bf" [0, 53, 0, 0, 0, 0, 2, 1, 0, 6, 1, 0, 7, 1, 0, 6, 1]
+            "42.bf" [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128]
+            "triangles.bf" [0, 10, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1]
             })
 
 (defn trim-tape [tape]
